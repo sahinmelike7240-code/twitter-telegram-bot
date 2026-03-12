@@ -4,7 +4,7 @@ import time
 import re
 
 # --- AYARLARIN ---
-BOT_TOKEN = "BURAYA_BOT_TOKEN_YAZ"
+BOT_TOKEN = "8796165327:AAHR8qAJFIBmKVaPFbSdfsERb3_MapU8kG4"
 CHANNEL_ID = "@CryptoELlTES"
 TWITTER_USERNAME = "CryptooELITES"
 CHECK_INTERVAL = 120 # 2 dakikada bir kontrol eder
