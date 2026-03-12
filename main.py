@@ -7,7 +7,8 @@ import os
 # --- AYARLARIN (Railway'deki Variables kısmından çekilir) ---
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
-TWITTER_USERNAME = os.getenv("TWITTER_USERNAME")
+# RSS.app linkini buraya direkt sabitliyoruz çünkü en sağlamı bu:
+feed_url = "https://rss.app/feeds/X411D152Had8CdC6.xml"
 CHECK_INTERVAL = 120 # 2 dakikada bir kontrol eder
 
 last_link = ""
@@ -35,27 +36,29 @@ def send_to_telegram(message, image_url=None):
         print(f"Mesaj gonderilirken hata olustu: {e}")
 
 print("Bot baslatildi...")
-send_to_telegram("Sistem Kontrol: Bot başarıyla aktif edildi! 🚀")
+# Botun açıldığını kanıtlamak için (İstersen sonra bu satırı silebilirsin)
+send_to_telegram("Sistem Kontrol: Bot RSS.app üzerinden yayına başladı! 🚀")
+
 while True:
     try:
-        # RSSHub üzerinden Twitter akışını al
-        feed_url = f"https://rsshub.app/twitter/user/{TWITTER_USERNAME}"
         feed = feedparser.parse(feed_url)
         
         if feed.entries:
             tweet = feed.entries[0]
             link = tweet.link
             
-            # İlk çalıştırmada son tweeti kaydet ama paylaşma (kanalı korumak için)
+            # İlk çalıştırmada son tweeti kaydet ama paylaşma
             if not last_link:
                 last_link = link
                 print(f"Baslangic tweeti kaydedildi: {link}")
             
-            # Eğer yeni bir tweet ise ve Retweet degilse
-            elif link != last_link and not tweet.title.startswith("RT @"):
+            # Eğer yeni bir tweet ise
+            elif link != last_link:
+                # Metni al (RSS.app 'summary' veya 'description' kullanır)
+                raw_text = tweet.get('summary', tweet.get('description', ''))
+                # HTML etiketlerini temizle
+                clean_text = re.sub(r'<[^>]+>', '', raw_text)
                 
-                # Metni temizle
-                clean_text = re.sub(r'<[^>]+>', '', tweet.summary)
                 full_message = f"{clean_text}\n\n🔗 <a href='{link}'>Tweet Linki</a>"
                 
                 # Görsel bulma
@@ -71,9 +74,9 @@ while True:
                 last_link = link
                 print(f"Yeni tweet paylasildi: {link}")
         else:
-            print("Tweet bulunamadi veya RSSHub su an yanit vermiyor.")
+            print("RSS feed su an bos veya okunamiıyor.")
                 
     except Exception as e:
-        print(f"Döngü hatası: {e}")
+        print(f"Dongu hatasi: {e}")
         
     time.sleep(CHECK_INTERVAL)
